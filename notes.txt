@@ -95,3 +95,32 @@ void should_ReturnCorrectDietPlan_when_CorrectCoder() {
             () -> assertEquals(expected.getFat(), actual.getFat())
     );
 }
+
+Parametrized Source Data
+------------------------
+@ParameterizedTest
+@ValueSource(doubles = {70.0, 89.0, 95.0, 110.0})
+void should_ReturnTrue_when_DietRecommendedParametrized(double coderWeight) {
+    // given
+    double height = 1.65;
+    double weight = coderWeight;
+    // when
+    boolean recommended = BMICalculator.isDietRecommended(weight, height);
+    // then
+    assertTrue(recommended);
+}
+=> the values are injected into the function parameter automatically
+
+When providing multiple values, we use CsvSource
+Here, the variable name is reserved to "value", we can use another, but we can omit it
+@ParameterizedTest(name = "weight={0} height={1}") => this is not needed, but it makes the output more friendly
+@CsvSource(value = {"70.0, 1.72", "89.0, 1.75", "95.0, 1.78"})
+void should_ReturnTrue_when_DietRecommendedParametrized(double coderWeight, double coderHeight)
+
+In case we want to use an actual CSV file, then:
+@CsvFileSource(resources = "/diet-recommended-input-data.csv",  numLinesToSkip = 1)
+numLinesToSkip => we use this to skip some lines in case, for example, the 1st line has column/header names, i.e no actual test values. We can skip more than 1 line
+
+CsvFileSource => will automatically start looking in src/test/resources folder, so all we have to do
+it start with a slash and make sure to get the file path and name right from there
+the rest is the same as if using CsvSource
