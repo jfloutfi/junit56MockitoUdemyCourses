@@ -1,0 +1,97 @@
+unit tests test the smallest unit
+in java for example, that can be a method
+
+Notice also, that the package for the tests and source code is the same
+
+Conventions:
+when testing a class, the test name would be the class name followed by test, for example:
+
+class BMICalculatorTest {
+
+    @Test
+    void test() {
+        assertTrue(BMICalculator.isDietRecommended(81.2, 1.65));
+    }
+}
+
+another convention is "should/when", for example:
+should_ReturnTrue_When_dietRecommended
+another why to write this would be: shouldReturnTrue_whenDietRecommended
+
+Given/When/Then: Arrange/Act/Assert => make the test as clear as possible, for example:
+class BMICalculatorTest {
+
+    @Test
+    void should_ReturnTrue_when_DietRecommended() {
+        // given
+        double height = 1.65;
+        double weight = 81.2;
+        // when
+        boolean recommended = BMICalculator.isDietRecommended(81.2, 1.65);
+        // then
+        assertTrue(recommended);
+    }
+}
+
+High test coverage is a good thing, add as much as you can
+
+Adding tests for exceptions is also recommended, look at the method's body or signature ins case it specifies a case where an exception can ve thrown
+In this case, when can not write the test in the normal way, as the exception will be thrown and the code will break
+so we need somthing is potentially executable. We need to store the result in a "Executable" variable
+Use the object from the JUnit Lib "import org.junit.jupiter.api.function.Executable;"
+On the left hand side, we need a lambda expression, we can easily acheive that by addint "() -> " in front of the call
+
+for example:
+@Test
+void should_ThrowArithmeticException_when_HeightZero() {
+    // given
+    double height = 0.0;
+    double weight = 81.2;
+    // when
+    Executable executable = () -> BMICalculator.isDietRecommended(weight, height);
+    // then
+    assertThrows(ArithmeticException.class, executable);
+}
+
+What does this mean? it means that now we have an executable, i.e when line "Executable executable = () -> BMICalculator.isDietRecommended(weight, height);" is reached, the code will not execute immediatley, instead it is executed inside the assert statement when the exception gets caught and asserted on
+
+In case we have multiple assertions, if the 1st one fails, the 2nd one will never be executed,
+so we use assertAll(). It takes executables as arguments. So all we have to do is wrap our asserts as lambdas
+assertAll(
+    () -> assertEquals(1.83, coderWorstBMI.getHeight()),
+    () -> assertEquals(98.4, coderWorstBMI.getWeight())
+);
+
+for asserting on nulls, use assertNull
+
+Assert on Arrays
+----------------
+when comparing array values, use assertArrayEquals which compares the values
+assertEquals will check if the array references are the same
+NOTE: assertArrayEquals will stop the comparision at the 1st failure
+
+beforeAll / beforeEach and afterAll / afterEach hooks
+-----------------------------------------------
+in case we need to init some object, we do it in beforeEach
+this recreates the object before every test
+because we want the tests to be independant of each other, especially if the objects created are mutable
+
+IMPORTANT: beforeAll and afterAll must be "static"
+we reserve these for ops that are too expensive to run every time like setting up a DB connection for example
+
+When comparing Objects 
+----------------------
+void should_ReturnCorrectDietPlan_when_CorrectCoder() {
+    Coder coder = new Coder(1.82, 75.0, 26, Gender.MALE);
+    DietPlan expected = new DietPlan(2202, 110, 73, 275);
+
+    DietPlan actual = dietPlanner.calculateDiet(coder);
+
+    // assertEquals(); does not work, it will compare the obj references
+    assertAll(
+            () -> assertEquals(expected.getCalories(), actual.getCalories()),
+            () -> assertEquals(expected.getCarbohydrate(), actual.getCarbohydrate()),
+            () -> assertEquals(expected.getProtein(), actual.getProtein()),
+            () -> assertEquals(expected.getFat(), actual.getFat())
+    );
+}
