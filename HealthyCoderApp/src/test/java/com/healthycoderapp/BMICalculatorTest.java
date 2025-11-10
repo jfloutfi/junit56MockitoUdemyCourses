@@ -1,5 +1,6 @@
 package com.healthycoderapp;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -15,26 +16,29 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class BMICalculatorTest {
 
-    @Test
-    void should_ReturnTrue_when_DietRecommended() {
-        // given
-        double height = 1.65;
-        double weight = 81.2;
-        // when
-        boolean recommended = BMICalculator.isDietRecommended(weight, height);
-        // then
-        assertTrue(recommended);
-    }
+    @Nested
+    class IsDietRecommnededTests {
+        @Test
+        void should_ReturnTrue_when_DietRecommended() {
+            // given
+            double height = 1.65;
+            double weight = 81.2;
+            // when
+            boolean recommended = BMICalculator.isDietRecommended(weight, height);
+            // then
+            assertTrue(recommended);
+        }
 
-    @Test
-    void should_ReturnFalse_when_DietNotRecommended() {
-        // given
-        double height = 1.92;
-        double weight = 81.2;
-        // when
-        boolean recommended = BMICalculator.isDietRecommended(weight, height);
-        // then
-        assertFalse(recommended);
+        @Test
+        void should_ReturnFalse_when_DietNotRecommended() {
+            // given
+            double height = 1.92;
+            double weight = 81.2;
+            // when
+            boolean recommended = BMICalculator.isDietRecommended(weight, height);
+            // then
+            assertFalse(recommended);
+        }
     }
 
     @Test

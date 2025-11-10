@@ -158,3 +158,39 @@ Here we use assertTimeout and we wrap the function we want to assese in a lambda
 only the execution time of the lambda is checked
 
 org.opentest4j.AssertionFailedError: execution exceeded timeout of 1 ms by 2 ms => this means that the executable to took (1 + 2) = 3 seconds to execute
+
+Assumptions 
+-----------
+assumeTrue(...) if some condition fails, then the test will be skipped instead of being failed
+this can be usefull in case we want to only run a test in "staging" environment instead of "dev" for
+so we check if some variable is == to "staging".
+
+But this is not the best way, as we would like test test not to run in the 1st place 
+
+another good use here is in case we are guarding again some exception. in case an exception was thrown
+we catch in an assume (via the hole executable method we used before) and skip the test instead of failing it
+
+Netsing
+-------
+this helps better organise the tests. It is applied on inner classes of test classes:
+
+@Nested
+class IsDietRecommnededTests {
+    // put the tests methods here
+}
+
+=> this will also organise the output and nest the results and group them under the inner class name
+
+In JUnit 5, a @Nested test class can access fields, methods, and setup from the outer test class — as long as the outer class is not static, which JUnit 5 already enforces. So if I have some variable (even if private var) defined in the outer test class, I can access it in the inner class the normal way
+
+you can nest as much as you want.
+Also, each inner class can have its own beforeEach and afterEach methods, refer to junit docs for more details
+
+Other annotations
+-----------------
+@DisplayName("Some test name") => changes the display name of the test in the output report
+I can also use it on nested InnerClasses
+
+@Disabled => skips the tagged test. this will show up in the final report
+
+@DisableOnOs(OS.WINDOWS) => will disable the test on widows but runs it on everything else
