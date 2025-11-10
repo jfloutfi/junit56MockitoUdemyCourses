@@ -7,6 +7,7 @@ import org.junit.jupiter.params.provider.CsvFileSource;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -132,5 +133,20 @@ class BMICalculatorTest {
         boolean recommended = BMICalculator.isDietRecommended(weight, height);
         // then
         assertTrue(recommended);
+    }
+
+    @Test
+    void should_ReturnCoderWithWorstBMI_when_CodeListNotEmpty_in10ms() {
+        // given
+        List<Coder> coders = new ArrayList<>();
+        for (int i = 0; i< 10000; i++) {
+            coders.add(new Coder(1.0 + i,10.0 + i));
+        }
+
+        // when
+        Executable coderWorstBMIExecutable = () -> BMICalculator.findCoderWithWorstBMI(coders);
+
+        // then
+        assertTimeout(Duration.ofMillis(10), coderWorstBMIExecutable);
     }
 }
