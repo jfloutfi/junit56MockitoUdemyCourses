@@ -1,0 +1,1 @@
+An important aspect of mocking is that it allows us to mock dependencies such that, if we are testing a class, the tests will fail only if the class under testing has issues making said tests independant from any failures related to the dependencies themselves
