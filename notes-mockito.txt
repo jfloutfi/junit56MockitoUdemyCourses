@@ -1,1 +1,58 @@
 An important aspect of mocking is that it allows us to mock dependencies such that, if we are testing a class, the tests will fail only if the class under testing has issues making said tests independant from any failures related to the dependencies themselves
+
+in order to mock a class:
+we declare a variable:
+private MyService myService;
+
+then, in a beforeEach tagged method, we instantiate a mock:
+this.myService = mock(MyService.class)
+
+the instance myService behaves like the real class when trying to access its memeber variables and methods, but behind the scenes, it does not have the real logic of the actual service class
+
+Default return values
+---------------------
+Say we want to test a method that calls another method
+that method belongs to a mocked object that is passed as an argument to the method under test
+In this case, mockito uses "nice mocks", i.e it will return values that make sense, for example, same the mocked object has a method that return a List<Room>, then "nice mocks" will return an empty List<Room> (even if the list is empty, it is still of type List<Room>, so it will not break the code)
+
+nice mocks for example, returns:
+- empty lists
+- 0
+- null
+- empty string
+- ...
+
+i.e it conserves the return type and returns a value that allows the rest of the code to execute
+
+Custom return values
+--------------------
+Stubbing method:
+
+when(this.roomService.getAvailableRooms())
+    .thenReturn(Collections.singletonList(new Room("1", 2)));
+
+basically we are telling the mocked calss instance that when getAvailableRooms() is called, return the value we desire
+
+Multiple thenReturn() calls
+---------------------------
+We can make the thenReturn() method return different values when it is called multiple times.
+
+We do than by simply chaining multiple thenReturn()
+
+when(this.roomService.getAvailableRooms())
+  .thenReturn(rooms)
+  .thenReturn(Collections.emptyList());
+
+assertAll is usefull here as it will allow us to check all possible cases and get a detailed output of which check failed
+
+Throwing Exceptions 
+-------------------
+when(this.roomService.findAvailableRoomId(bookingRequest))
+  .thenThrow(BusinessException.class);
+
+Then to check for the exception, we need to pack the call into an executable:
+Executable executable = () -> this.bookingService.makeBooking(bookingRequest);
+assertThrows(BusinessException.class, executable);
+
+Argument Matcher
+----------------
