@@ -76,3 +76,22 @@ when(this.paymentService.pay(any(), eq(400.0))).thenThrow(BusinessException.clas
 
 Matching strings is a bit trickier:
 anyString() will not match nullable strings, so if the method was passed a null as its string value, the matcher will fail, here we need to use any() like any other object
+
+Verifying behavior
+------------------
+Examples:
+- we want to know how many times a method is called
+- we want to know if a method inside the method under test was called
+- we want to know if a certain variable inside the method under test was set
+- ...
+these are what we call the side effects of the method under test
+
+so we use the verify methods:
+
+verify(this.paymentService, times(1)).pay(bookingRequest, 400.0);
+=> this will verify that the pay() method was called with the bookingRequest instance that was passed and the value 400.0 ONLY ONCE. Note that we are not passing the value 400.0 to the pay method here, this will be calculated by the pay method
+
+verifyNoMoreInteractions(this.paymentService); => this will verify that after pay() was called, no other method of paymentService was called
+
+In case we want to check that a method was never invoked, then:
+verify(this.paymentService, never()).pay(any(), anyDouble());
