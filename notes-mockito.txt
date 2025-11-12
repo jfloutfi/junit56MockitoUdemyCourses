@@ -95,3 +95,54 @@ verifyNoMoreInteractions(this.paymentService); => this will verify that after pa
 
 In case we want to check that a method was never invoked, then:
 verify(this.paymentService, never()).pay(any(), anyDouble());
+
+Spy()
+-----
+using spy() instead of mock() ?
+
+mocks have no logic, if nothing is specified, "nice mocks" are used
+
+spies on the other hand have all the logic of the original class we are spying on unless we specify a different behavior => i.e we are dealing with partial mocks
+
+spies are needed in case we want to use "verify" methods
+
+Since spies use the real logic, sometimes we will need to create mocks to method that are called by the method under test, for example:
+
+// Given
+BookingRequest bookingRequest = new BookingRequest("1", LocalDate.of(2020, 01, 01), LocalDate.of(2020, 01, 05), 2, true);
+bookingRequest.setRoomId("1.3");
+String bookingId = "1";
+
+// When
+this.bookingService.cancelBooking(bookingId);
+=> the above line will cause an exception because the cancelBooking method will actually try to get the real booking request using an ID that does not exist. this will result in a null (a get method in bookingDAO class fetches the booking request), the code in cancelBooking will then try to do an operation on said null which will throw a NullPointerException
+
+So we use: doReturn
+doReturn(bookingRequest).when(bookingDAO).get(bookingId);
+=> bookingDAO has a get method that fetches the booking request using a given booking ID. it is this method that ends up returning the null. here, we are telling it, that, in case I am passing bookingId = "1" even if the booking ID does not exist in the list of booking, return the bookingRequest instance we created
+
+Basically, what we are doing here, is elliminiating (mocking) a dependency that the cancelBooking() method uses
+
+doThrow can be used for spies to throw exceptions - check example in voind mocking below
+
+Mocking Void methods 
+--------------------
+=> mokcing methods that do not return anything
+
+in case we want to mock a void method and have it throw an exception, we can not us when(), the compiler will show an error, in this case, we use doThrow() like the example below
+
+doThrow(BusinessException.class).when(this.mailSender).sendBookingConfirmation(any());
+
+in case, we do not want to throw any exception, but we still want to mock the sendBookingConfirmation method, we use doNothing()
+doNothing().when(this.mailSender).sendBookingConfirmation(any());
+
+to check that an exception was not thrown, we have 2 method:
+- assert on nothing => if an exception is thrown, the test will fail
+- assertDoesNotThrow(() -> this.bookingService.makeBooking(bookingRequest)); => more idiomatic and:
+  - Makes intent explicit in test reports.
+  - Useful when chaining with other assertions.
+  - Works well when returning a value you want to assert on.
+
+NOTE:
+- doNothing should be usable with spies as well
+- the "nice mocks" default behavior of void method (when using mock() and not spy()) is doNothing
