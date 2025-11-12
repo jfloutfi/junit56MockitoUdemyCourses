@@ -7,10 +7,11 @@ import org.junit.jupiter.api.function.Executable;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class Test05ThrowingExceptions {
+public class Test06Matchers {
     private BookingService bookingService;
     private PaymentService paymentService;
     private RoomService roomService;
@@ -28,10 +29,12 @@ public class Test05ThrowingExceptions {
     }
 
     @Test
-    void shouldThrowException_whenNoRoomAvailable() {
+    void shouldNotCompleteBooking_whenPriceToHigh() {
         // Given
-        BookingRequest bookingRequest = new BookingRequest("1", LocalDate.of(2020, 01, 01), LocalDate.of(2020, 01, 05), 2, false);
-        when(this.roomService.findAvailableRoomId(bookingRequest)).thenThrow(BusinessException.class);
+        BookingRequest bookingRequest = new BookingRequest("1", LocalDate.of(2020, 01, 01), LocalDate.of(2020, 01, 05), 2, true);
+        when(this.paymentService.pay(any(), anyDouble())).thenThrow(BusinessException.class);
+        // when(this.paymentService.pay(any(), eq(400.0))).thenThrow(BusinessException.class);
+        // we must use eq() in case we want to use exact values
         // When
         Executable executable = () -> this.bookingService.makeBooking(bookingRequest);
         // Then

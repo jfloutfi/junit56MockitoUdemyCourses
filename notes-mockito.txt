@@ -56,3 +56,23 @@ assertThrows(BusinessException.class, executable);
 
 Argument Matcher
 ----------------
+when(this.roomService.findAvailableRoomId(bookingRequest))
+  .thenThrow(BusinessException.class);
+
+=> digging deeper into the above, it means that the exception will be thrown when and only when "this=>bookingRequest" object is passed to it, i.e, if I had a 2nd instance "bookingRequest2", if I passe it to the findAvailableRoomId() method, the exception will not be thrown, instead, if nothing is define, the "nice mocks" will take place
+
+What if we want to throw an exception or return a certain value no matter what bookingRequest instance is passed?
+
+when(this.paymentService.pay(any(), anyDouble())).thenThrow(BusinessException.class);
+
+We can use any() for objects, but we will have to specify which "any" for primitive types, like doubles or ints: anyDouble()
+
+NOTE: for any(), we can also pass it the class of the object that can be passed to retsrict it a bit: any(BookingRequest.class)
+
+IMPORTANT: matchers and exact values can not mix:
+when(this.paymentService.pay(any(), 400.0)).thenThrow(BusinessException.class); => this will result in an error 
+However, Mockito does provide a way around: eq() method
+when(this.paymentService.pay(any(), eq(400.0))).thenThrow(BusinessException.class);
+
+Matching strings is a bit trickier:
+anyString() will not match nullable strings, so if the method was passed a null as its string value, the matcher will fail, here we need to use any() like any other object
