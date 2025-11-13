@@ -173,3 +173,99 @@ Instead of using a before each method, we can use some annotation magic
 @Captor => for ArgumentCaptors
 @ExtendWith(MockitoExtension.class) => IMPORTANT: should be added before the test class, it is the glue that will do all the instanciation work that we would normally do in the @BeforeEach setup() method
 
+Mockito BDD:
+------------
+this simply provides aliases BDD style, so you use given() instead of when(), then() instead of verify()... etc
+
+Strict Stubbing 
+---------------
+if we define a stub when(...).thenReturn(...) that never gets used, when running the tests, we will get an error: unecessary stub detected
+
+in case we want to keep it, we can use linient().when(...)... etc in front of when
+
+Mocking static methods
+----------------------
+Here we use try(...) with resources and include everything inisde the try body:
+
+@Test
+void shouldCalculateCorrectPrice() {
+    try(MockedStatic<CurrencyConverter> mockedStatic = mockStatic(CurrencyConverter.class)) {
+        // Given
+        BookingRequest bookingRequest = new BookingRequest("1", LocalDate.of(2020, 01, 01), LocalDate.of(2020, 01, 05), 2, true);
+        double expected = 400.0;
+        mockedStatic.when(() -> CurrencyConverter.toEuro(anyDouble())).thenReturn(400.0);
+        // When
+        double actual = bookingService.calculatePrice(bookingRequest);
+        // Then
+        assertEquals(expected, actual);
+    }
+}
+
+mockedStatic.when() => we feed this a lambda where we define which method we are targetting, its matcher and what it returns
+
+Mockito answers
+---------------
+Instead of simply returning some fixed value, we use thenAnswer()
+
+It takes an invocation (of a method) and we can then define some logic lambda style.
+
+invocation can ve used to fetch the arguments that we passed to the method in question when it was invoked
+
+mockedStatic.when(() -> CurrencyConverter.toEuro(anyDouble())).thenAnswer(invocation -> (double) invocation.getArgument(0) * 0.8);
+
+Answers can be used with other mocks and not just static mocks
+
+Private and Final methods
+-------------------------
+Mockito is able to mock final methods just like any other method
+
+Private methods => can not be mocked, from the standpoint of testing, they are only used internally in a class
+
+Mocking Construction
+--------------------
+Useful when dependency injection is not possible, for example,
+instead of created new Rooms the passing them in the constructor of RoomService (here we can mock Room and inject them), the Room contructor is called in the constructor or some function of RoomService, in this case, we have no choice but to intercept Room contructor calls
+
+@Test
+void shouldShowAvailableRoom_whenBigCapacity() {
+    try (
+            MockedConstruction<Room> mocked = mockConstruction(
+                    Room.class, (mock, context) -> {
+                        // context.arguments() gives constructor args
+                        // example: new MyClass("abc", 123)
+                        // context.arguments() would be ["abc", 123].
+                        when(mock.getCapacity()).thenReturn(6);
+                        when(mock.getId()).thenReturn("5.0");
+                    }
+            )
+    ) {
+        // RoomService is where new Room(...) calls are made
+        this.roomService = new RoomService();
+        BookingRequest bookingRequest = new BookingRequest("1", LocalDate.of(2020, 01, 01), LocalDate.of(2020, 01, 05), 6, false);
+
+        String actualRoomId = this.roomService.findAvailableRoomId(bookingRequest);
+
+        assertEquals("5.0", actualRoomId);
+    }
+}
+
+Here we are using a lambda to configure all Room contructor calls, but we can configure them 1 at a time insde the {...} when the test code and assertions are lockated
+
+Room objects can be fetched using: mocked.constructed().get(i)
+mocked is the variable we created we defined in the try with resources block
+
+but, we can also do it without the try block, for example
+
+MockedConstruction<User> mocked = mockConstruction(User.class);
+
+User mockA = mocked.constructed().get(0);
+User mockB = mocked.constructed().get(1);
+
+when(mockA.toString()).thenReturn("MockA");
+when(mockB.toString()).thenReturn("MockB");
+
+With, somewhere in the code, the following constructor calls take place
+// ...
+new User("A");
+new User("B");
+// ...
