@@ -146,3 +146,30 @@ to check that an exception was not thrown, we have 2 method:
 NOTE:
 - doNothing should be usable with spies as well
 - the "nice mocks" default behavior of void method (when using mock() and not spy()) is doNothing
+
+Argument Captors
+-----------------
+private ArgumentCaptor<Double> doubleArgumentCaptor;
+We can also capture Int and other primitives, we can campture our custom objects... etc
+
+How to use this?
+In the verify method, we pass the ArgumentCaptor we created. It has the double purpose of verifying that the data passed matches the type, in this cas a double, but also capture and save the value.
+
+NOTE: Same as before, Captors and exact values (in this case a normal obejct) dot not match, so we have to use the eq() method:
+verify(this.paymentService, times(1)).pay(eq(bookingRequest), this.doubleArgumentCaptor.capture());
+
+Then, to read the captured value:
+double capturedArgument = this.doubleArgumentCaptor.getValue();
+
+In case the method under test is called twice, if we are using the same captor instance, .getValue() will fetche the value captured from the last call, so in order to check all the captures, we use:
+.getAllValues() => this returns a list, in this case it is a List<Double>
+
+Annotations 
+-----------
+Instead of using a before each method, we can use some annotation magic
+
+@Mock or @Spy => we add these above the definitions instead of using mock() or spy()
+@InjectMocks => we add this above the object to which we want to injects the mocks and/or the spies to
+@Captor => for ArgumentCaptors
+@ExtendWith(MockitoExtension.class) => IMPORTANT: should be added before the test class, it is the glue that will do all the instanciation work that we would normally do in the @BeforeEach setup() method
+
